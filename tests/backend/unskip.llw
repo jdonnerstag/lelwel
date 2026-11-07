@@ -1,0 +1,15 @@
+token A B C Comma Newline Whitespace;
+
+skip Newline Whitespace;
+
+start tests;
+
+tests: single multi loop no_unskip;
+
+single: A Newline;
+
+multi: B (Newline | Whitespace);
+
+loop: C* Newline;
+
+no_unskip: Comma A;

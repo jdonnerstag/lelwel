@@ -1,0 +1,7 @@
+token A B;
+
+skip B;
+
+start s;
+
+s: A;
