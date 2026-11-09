@@ -13,25 +13,15 @@ either a newline or horizontal whitespace after `a`.
 zero-or-more and one-or-more repetitions, sequences, nullable rule calls,
 multiple unskipped token kinds, ordinary skipping, consecutive statements,
 missing required tokens, and skipped terminators inside a repeated rule
-(`lines_block`). In `lines_block`, every newline after `lines`' items is a
-terminator, so a blank line yields an extra terminator.
+(`lines_block`). A terminator consumes a comma or newline, followed by any
+additional newlines; therefore a run of blank lines is one terminator.
 Successful parses must have no diagnostics, the expected terminator nodes, and
 a lossless CST.
 
-Known limitation: unskip lists are computed from rule-wide follow sets, not per
-call site. A newline that `terminator` unskips for `lines_block` also becomes
-visible after `single a`, so `single a\n\n` fails. The test
-`unskip_does_not_leak_between_statements` is marked `#[ignore]` to document
-this; run it with `cargo test -p lelwel-unskip -- --ignored`.
-
-In `single: 'single' A terminator`, the newline in `single a\n` is the terminator. 
-A second newline in `single a\n\n` should ideally be skipped.
-In `lines_block`, a newline can be followed by another terminator in the repetition. 
-There, the parser needs to keep newlines visible so it can recognize blank lines.
-The parser doesn’t create one version of terminator for `single` and another for 
-`lines_block`. It combines what those uses need into one shared unskip decision. 
-Because `lines_block` needs newlines visible, they can remain visible after 
-`single` too — where that extra newline causes the parse to fail.
+This also allows `single a\n\n` to parse without requiring call-site-specific
+unskip behavior: both newlines belong to the same `terminator` node. In
+`lines_block`, multiple consecutive newlines likewise form one terminator node,
+rather than one node per newline.
 
 Run from the repository root:
 

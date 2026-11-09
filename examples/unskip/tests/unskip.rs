@@ -28,8 +28,8 @@ fn assert_valid<'a>(source: &'a str, terminators: &[&str]) -> Cst<'a> {
                         || cst.match_token(child, Token::Comma).is_some()
                 })
                 .collect();
-            assert_eq!(tokens.len(), 1, "{source:?}:\n{cst}");
-            &source[cst.span(tokens[0])]
+            assert!(!tokens.is_empty(), "{source:?}:\n{cst}");
+            &source[cst.span(tokens[0]).start..cst.span(*tokens.last().unwrap()).end]
         })
         .collect();
     assert_eq!(actual_terminators, terminators, "{source:?}:\n{cst}");
@@ -61,6 +61,7 @@ fn required_token_followed_by_unskipped_newline() {
 #[test]
 fn non_skipped_terminator_still_works() {
     assert_valid("single a ,", &[","]);
+    assert_valid("single a,\n\n", &[",\n\n"]);
 }
 
 #[test]
@@ -121,9 +122,9 @@ fn either_of_two_skipped_tokens_can_be_unskipped() {
 
 #[test]
 fn skipped_terminator_in_repetition_accepts_blank_lines() {
-    assert_valid("lines a\n\nend", &["\n", "\n"]);
-    assert_valid("lines a\n \t\n\nend", &["\n", "\n", "\n"]);
-    assert_valid("lines a\na\n\nend", &["\n", "\n", "\n"]);
+    assert_valid("lines a\n\nend", &["\n\n"]);
+    assert_valid("lines a\n \t\n\nend", &["\n \t\n\n"]);
+    assert_valid("lines a\na\n\nend", &["\n", "\n\n"]);
 }
 
 #[test]
@@ -139,11 +140,10 @@ fn skip_tokens_remain_skipped_outside_exceptional_rules() {
 }
 
 #[test]
-#[ignore = "known limitation: unskip lists use rule-wide follow sets, so a blank line after `single` leaks into `document`"]
 fn unskip_does_not_leak_between_statements() {
     assert_valid(
         "single a\n\nnormal a\nb\nc,\noptional\nstar a a\nplus a\nnested\n",
-        &["\n", "\n", "\n", "\n", "\n"],
+        &["\n\n", "\n", "\n", "\n", "\n"],
     );
 }
 

@@ -10,7 +10,7 @@ document: statement*;
 statement: single | optional | zero_or_more | one_or_more
          | sequence | nested | multiple | normal | lines_block;
 
-terminator: Comma | Newline;
+terminator: (Comma | Newline) (?1 Newline)*;
 
 single: 'single' A terminator;
 optional: 'optional' [A] terminator;

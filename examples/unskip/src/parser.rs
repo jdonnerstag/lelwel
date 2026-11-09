@@ -23,4 +23,8 @@ impl<'a> ParserCallbacks<'a> for Parser<'a> {
             .with_message(message)
             .with_label(Label::primary((), span))
     }
+
+    fn predicate_terminator_1(&self) -> bool {
+        self.tokens.get(self.pos).copied() == Some(Token::Newline)
+    }
 }
